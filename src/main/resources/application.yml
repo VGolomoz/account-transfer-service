@@ -1,3 +1,33 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /account-transfer-service
+
 spring:
   application:
-    name: Account transfer service
+    name: account-transfer-service
+  datasource:
+    url: jdbc:h2:mem:account_transfer_db
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  liquibase:
+    change-log: classpath:/db/changelog/changelog.xml
+    enabled: true
+
+external:
+  service:
+    currency-exchange:
+      exchangerate-api:
+        host: https://v6.exchangerate-api.com
+        url: ${external.service.currency-exchange.exchangerate-api.host}/v6/ab669cc79ffd26b0b9cab535/latest/
