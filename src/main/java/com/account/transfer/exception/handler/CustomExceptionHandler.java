@@ -3,6 +3,8 @@ package com.account.transfer.exception.handler;
 import com.account.transfer.api.dto.ErrorResponse;
 import com.account.transfer.exception.ErrorMessage;
 import com.account.transfer.exception.ServiceException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,16 +46,33 @@ public class CustomExceptionHandler {
     @ResponseBody
     @ExceptionHandler(value = {MethodArgumentNotValidException.class})
     public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
-        ex.getBindingResult().getGlobalErrors().forEach(error -> {
-            log.error(error.getObjectName() + ": " + error.getDefaultMessage());
-        });
-
         var responseBody = ErrorResponse.builder()
                 .errorCode(HttpStatus.BAD_REQUEST.value() + FIELDS_VALIDATION_ERROR.getCode())
                 .errorMessage(ErrorMessage.builder()
                         .key(FIELDS_VALIDATION_ERROR.name())
                         .text(ex.getBindingResult().getFieldErrors().stream()
                                 .map(error -> error.getField().concat(":").concat(error.getDefaultMessage()))
+                                .peek(log::error)
+                                .collect(Collectors.joining(";")))
+                        .build())
+                .timestamp(Instant.now().toEpochMilli())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(responseBody);
+    }
+
+    @ResponseBody
+    @ExceptionHandler(value = {ConstraintViolationException.class})
+    public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException ex) {
+        var responseBody = ErrorResponse.builder()
+                .errorCode(HttpStatus.BAD_REQUEST.value() + FIELDS_VALIDATION_ERROR.getCode())
+                .errorMessage(ErrorMessage.builder()
+                        .key(FIELDS_VALIDATION_ERROR.name())
+                        .text(ex.getConstraintViolations().stream()
+                                .map(ConstraintViolation::getMessage)
+                                .peek(log::error)
                                 .collect(Collectors.joining(";")))
                         .build())
                 .timestamp(Instant.now().toEpochMilli())

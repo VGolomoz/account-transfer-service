@@ -4,8 +4,11 @@ import com.account.transfer.api.dto.ExchangeRateResponse;
 import com.account.transfer.exception.ExchangeRateNotFoundException;
 import com.account.transfer.mapper.ExchangeRateMapper;
 import com.account.transfer.service.ExchangeRateService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/exchange-rate")
 @RequiredArgsConstructor
+@Validated
 public class ExchangeRateController {
 
     private final ExchangeRateService service;
@@ -36,10 +40,16 @@ public class ExchangeRateController {
      * @throws ExchangeRateNotFoundException if the provided currency codes are not found.
      */
     @GetMapping
-    public ResponseEntity<ExchangeRateResponse> getExchangeRate(@RequestParam String fromCurrency,
-                                                                @RequestParam String toCurrency) {
+    public ResponseEntity<ExchangeRateResponse> getExchangeRate(
+            @RequestParam(name = "fromCurrency")
+            @Pattern(regexp = "[A-Za-z]{3}", message = "Parameter 'fromCurrency' must be 3 latin letters")
+            @Valid String fromCurrency,
 
-        var exchangeRateModel = service.getExchangeRate(fromCurrency, toCurrency);
+            @RequestParam(name = "toCurrency")
+            @Pattern(regexp = "[A-Za-z]{3}", message = "Parameter 'toCurrency' must be 3 latin letters")
+            @Valid String toCurrency) {
+
+        var exchangeRateModel = service.getExchangeRate(fromCurrency.toUpperCase(), toCurrency.toUpperCase());
         return ResponseEntity.ok(mapper.mapToExchangeRateResponse(exchangeRateModel));
     }
 }
