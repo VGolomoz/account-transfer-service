@@ -6,7 +6,7 @@ import static com.account.transfer.exception.AppErrorCode.EXCHANGE_RATE_NOT_FOUN
 
 public class ExchangeRateNotFoundException extends ServiceException {
 
-    private static final String msg = "Exchange rate for pairs [%s:%s] does not found";
+    private static final String msg = "Exchange rate for pairs [%s:%s] is not found";
 
     public ExchangeRateNotFoundException(String fromCurrency, String toCurrency) {
         super(EXCHANGE_RATE_NOT_FOUND_ERROR, String.format(msg, fromCurrency, toCurrency));
