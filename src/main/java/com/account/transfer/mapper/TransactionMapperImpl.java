@@ -2,8 +2,13 @@ package com.account.transfer.mapper;
 
 import com.account.transfer.api.dto.TransactionResponse;
 import com.account.transfer.entity.TransactionEntity;
+import com.account.transfer.entity.TransactionStatus;
+import com.account.transfer.service.model.AccountModel;
 import com.account.transfer.service.model.TransactionModel;
 import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 
 import static java.util.Objects.isNull;
 
@@ -18,8 +23,8 @@ public class TransactionMapperImpl implements TransactionMapper {
 
         return TransactionModel.builder()
                 .transactionId(entity.getId())
-                .accOwnerId(entity.getFromAccountId())
-                .accTargetId(entity.getToAccountId())
+                .accountOwnerId(entity.getFromAccountId())
+                .targetAccountId(entity.getToAccountId())
                 .amount(entity.getAmount())
                 .dateTime(entity.getDateTime())
                 .status(entity.getStatus())
@@ -28,7 +33,6 @@ public class TransactionMapperImpl implements TransactionMapper {
                 .baseCurrency(entity.getBaseCurrency())
                 .targetCurrency(entity.getTargetCurrency())
                 .exchangeRate(entity.getExchangeRate())
-                .details(entity.getDetails())
                 .build();
     }
 
@@ -40,8 +44,8 @@ public class TransactionMapperImpl implements TransactionMapper {
 
         return TransactionResponse.builder()
                 .transactionId(model.getTransactionId())
-                .accOwnerId(model.getAccOwnerId())
-                .accTargetId(model.getAccTargetId())
+                .accountOwnerId(model.getAccountOwnerId())
+                .targetAccountId(model.getTargetAccountId())
                 .amount(model.getAmount())
                 .dateTime(model.getDateTime())
                 .status(model.getStatus().toString())
@@ -50,5 +54,23 @@ public class TransactionMapperImpl implements TransactionMapper {
                 .targetCurrency(model.getTargetCurrency())
                 .exchangeRate(model.getExchangeRate())
                 .build();
+    }
+
+    public TransactionEntity buildTransactionEntity(AccountModel accountOwner, AccountModel targetAccount,
+                                                    BigDecimal amount, TransactionStatus status,
+                                                    BigDecimal residualBalance, BigDecimal exchangeRate) {
+        var transaction = new TransactionEntity();
+        transaction.setFromAccountId(accountOwner.getOwnerId());
+        transaction.setToAccountId(targetAccount.getOwnerId());
+        transaction.setAmount(amount);
+        transaction.setDateTime(ZonedDateTime.now());
+        transaction.setStatus(status);
+        transaction.setAvailableBalance(accountOwner.getBalance());
+        transaction.setResidualBalance(residualBalance);
+        transaction.setBaseCurrency(accountOwner.getCurrency());
+        transaction.setTargetCurrency(targetAccount.getCurrency());
+        transaction.setExchangeRate(exchangeRate);
+
+        return transaction;
     }
 }

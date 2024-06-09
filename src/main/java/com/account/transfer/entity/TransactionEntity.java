@@ -49,7 +49,4 @@ public class TransactionEntity implements Serializable {
     @Column(name = "exchange_rate", nullable = false)
     private BigDecimal exchangeRate;
 
-    @Column(name = "details")
-    private String details;
-
 }

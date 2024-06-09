@@ -37,7 +37,7 @@ public class TransactionController {
     @PostMapping
     public ResponseEntity<TransactionResponse> performTransfer(@Valid @RequestBody TransactionRequest body) {
         var transactionModel = transactionService.performTransfer(
-                body.getAccOwnerId(), body.getAccTargetId(), body.getAmount());
+                body.getAccountOwnerId(), body.getTargetAccountId(), body.getAmount());
 
         return ResponseEntity.ok(transactionMapper.mapToTransactionResponse(transactionModel));
     }

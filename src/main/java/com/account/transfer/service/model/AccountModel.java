@@ -6,9 +6,10 @@ import lombok.Value;
 import java.math.BigDecimal;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class AccountModel {
 
+    Long id;
     Long ownerId;
     String currency;
     BigDecimal balance;

@@ -8,12 +8,12 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class TransactionModel {
 
     Long transactionId;
-    Long accOwnerId;
-    Long accTargetId;
+    Long accountOwnerId;
+    Long targetAccountId;
     BigDecimal amount;
     ZonedDateTime dateTime;
     TransactionStatus status;
@@ -22,5 +22,4 @@ public class TransactionModel {
     String baseCurrency;
     String targetCurrency;
     BigDecimal exchangeRate;
-    String details;
 }

@@ -17,6 +17,9 @@ public class AccountEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "owner_id", nullable = false)
+    private Long ownerId;
+
     @Column(name = "currency", length = 3, nullable = false)
     private String currency;
 

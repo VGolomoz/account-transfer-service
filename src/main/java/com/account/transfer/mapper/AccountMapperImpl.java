@@ -16,9 +16,25 @@ public class AccountMapperImpl implements AccountMapper {
         }
 
         return AccountModel.builder()
-                .ownerId(accountEntity.getId())
+                .id(accountEntity.getId())
+                .ownerId(accountEntity.getOwnerId())
                 .currency(accountEntity.getCurrency())
                 .balance(accountEntity.getBalance())
                 .build();
+    }
+
+    @Override
+    public AccountEntity mapToAccountEntity(AccountModel accountModel) {
+        if (isNull(accountModel)) {
+            return null;
+        }
+
+        var entity = new AccountEntity();
+        entity.setId(accountModel.getId());
+        entity.setOwnerId(accountModel.getOwnerId());
+        entity.setCurrency(accountModel.getCurrency());
+        entity.setBalance(accountModel.getBalance());
+
+        return entity;
     }
 }

@@ -11,8 +11,8 @@ import java.time.ZonedDateTime;
 public class TransactionResponse {
 
     Long transactionId;
-    Long accOwnerId;
-    Long accTargetId;
+    Long accountOwnerId;
+    Long targetAccountId;
     BigDecimal amount;
     ZonedDateTime dateTime;
     String status;

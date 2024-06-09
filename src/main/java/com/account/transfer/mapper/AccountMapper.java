@@ -16,4 +16,12 @@ public interface AccountMapper {
      * @return The mapped AccountModel
      */
     AccountModel mapToAccountModel(AccountEntity accountEntity);
+
+    /**
+     * Maps an AccountModel to an AccountEntity.
+     *
+     * @param accountModel The AccountModel
+     * @return The mapped AccountEntity
+     */
+    AccountEntity mapToAccountEntity(AccountModel accountModel);
 }

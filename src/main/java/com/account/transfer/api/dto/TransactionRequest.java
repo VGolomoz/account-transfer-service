@@ -1,5 +1,6 @@
 package com.account.transfer.api.dto;
 
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -12,12 +13,13 @@ import java.math.BigDecimal;
 public class TransactionRequest {
 
     @NotNull(message = "Account owner id can not be empty")
-    Long accOwnerId;
+    Long accountOwnerId;
 
-    @NotNull(message = "Account target id can not be empty")
-    Long accTargetId;
+    @NotNull(message = "Target account id can not be empty")
+    Long targetAccountId;
 
     @Digits(integer = 38, fraction = 2,
-            message = "The amount can have a maximum of 38 digits before the decimal point and 2 digits after the decimal point.")
+            message = "The amount can have a maximum of 38 digits and 2 digits after the decimal point.")
+    @DecimalMin(value = "0.01", message = "The transfer amount must be at least 0.01")
     BigDecimal amount;
 }

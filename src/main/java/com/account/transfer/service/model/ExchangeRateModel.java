@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class ExchangeRateModel {
 
     String fromCurrency;
