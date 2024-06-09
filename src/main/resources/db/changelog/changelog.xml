@@ -4,4 +4,11 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
+    <!-- create account table -->
+    <include file="migration/create-account-table.xml"  relativeToChangelogFile="true"/>
+    <!-- create transaction table -->
+    <include file="migration/create-transaction-table.xml"  relativeToChangelogFile="true"/>
+    <!-- add test accounts to account table -->
+    <include file="migration/add-test-accounts-to-account-table.xml"  relativeToChangelogFile="true"/>
+
 </databaseChangeLog>
