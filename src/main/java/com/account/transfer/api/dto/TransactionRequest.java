@@ -18,8 +18,9 @@ public class TransactionRequest {
     @NotNull(message = "Target account id can not be empty")
     Long targetAccountId;
 
-    @Digits(integer = 38, fraction = 2,
-            message = "The amount can have a maximum of 38 digits and 2 digits after the decimal point.")
+    @NotNull(message = "Amount can not be empty")
+    @Digits(integer = 36, fraction = 2,
+            message = "The amount can have a maximum total of 36 digits and 2 digits after the decimal point.")
     @DecimalMin(value = "0.01", message = "The transfer amount must be at least 0.01")
     BigDecimal amount;
 }

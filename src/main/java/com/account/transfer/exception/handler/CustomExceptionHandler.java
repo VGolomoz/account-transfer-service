@@ -6,6 +6,7 @@ import com.account.transfer.exception.ServiceException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -51,7 +52,7 @@ public class CustomExceptionHandler {
                 .errorMessage(ErrorMessage.builder()
                         .key(FIELDS_VALIDATION_ERROR.name())
                         .text(ex.getBindingResult().getFieldErrors().stream()
-                                .map(error -> error.getField().concat(":").concat(error.getDefaultMessage()))
+                                .map(DefaultMessageSourceResolvable::getDefaultMessage)
                                 .peek(log::error)
                                 .collect(Collectors.joining(";")))
                         .build())

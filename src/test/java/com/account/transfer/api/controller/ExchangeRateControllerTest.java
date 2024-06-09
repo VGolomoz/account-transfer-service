@@ -2,9 +2,11 @@ package com.account.transfer.api.controller;
 
 import com.account.transfer.api.dto.ExchangeRateResponse;
 import com.account.transfer.exception.ExchangeRateNotFoundException;
+import com.account.transfer.exception.ExchangeRateServiceException;
 import com.account.transfer.mapper.ExchangeRateMapper;
 import com.account.transfer.service.ExchangeRateService;
 import com.account.transfer.service.model.ExchangeRateModel;
+import com.account.transfer.util.DateTimeUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -14,9 +16,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 
-import static com.account.transfer.exception.AppErrorCode.FIELDS_VALIDATION_ERROR;
+import static com.account.transfer.exception.AppErrorCode.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -36,13 +37,12 @@ class ExchangeRateControllerTest {
     private ExchangeRateMapper exchangeRateMapper;
 
     @Test
-    public void testGetExchangeRate_Success() throws Exception {
+    public void should_return_200_when_success() throws Exception {
         // given
         String fromCurrency = "USD";
         String toCurrency = "EUR";
         BigDecimal rate = BigDecimal.valueOf(0.85);
         ZonedDateTime dateTime = ZonedDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSXXX");
 
         ExchangeRateModel exchangeRateModel = prepareExchangeRateModel(fromCurrency, toCurrency, rate, dateTime);
         ExchangeRateResponse exchangeRateResponse = prepareExchangeRateResponse(fromCurrency, toCurrency, rate, dateTime);
@@ -58,11 +58,11 @@ class ExchangeRateControllerTest {
                 .andExpect(jsonPath("$.fromCurrency").value(fromCurrency))
                 .andExpect(jsonPath("$.toCurrency").value(toCurrency))
                 .andExpect(jsonPath("$.rate").value(rate))
-                .andExpect(jsonPath("$.dateTime").value(dateTime.format(formatter)));
+                .andExpect(jsonPath("$.dateTime").value(DateTimeUtil.formatToString(dateTime)));
     }
 
     @Test
-    public void testGetExchangeRate_InvalidFromCurrency() throws Exception {
+    public void should_return_400_when_invalid_fromCurrency_param() throws Exception {
         // given
         String invalidFromCurrency = "INVALID";
         String toCurrency = "EUR";
@@ -77,7 +77,7 @@ class ExchangeRateControllerTest {
     }
 
     @Test
-    public void testGetExchangeRate_InvalidToCurrency() throws Exception {
+    public void should_return_400_when_invalid_toCurrency_param() throws Exception {
         // given
         String fromCurrency = "USD";
         String invalidToCurrency = "INVALID";
@@ -92,10 +92,11 @@ class ExchangeRateControllerTest {
     }
 
     @Test
-    public void testGetExchangeRate_NotFound() throws Exception {
+    public void should_return_404_when_throws_ExchangeRateNotFoundException() throws Exception {
         // given
         String fromCurrency = "USD";
         String toCurrency = "EUR";
+        String expectedErrorMsg = String.format("Exchange rate for pairs [%s:%s] is not found", fromCurrency, toCurrency);
 
         when(exchangeRateService.getExchangeRate(fromCurrency, toCurrency))
                 .thenThrow(new ExchangeRateNotFoundException(fromCurrency, toCurrency));
@@ -104,11 +105,32 @@ class ExchangeRateControllerTest {
         mockMvc.perform(get("/exchange-rate")
                 .param("fromCurrency", fromCurrency)
                 .param("toCurrency", toCurrency))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.errorMessage.key").value(EXCHANGE_RATE_NOT_FOUND_ERROR.toString()))
+                .andExpect(jsonPath("$.errorMessage.text").value(expectedErrorMsg));
     }
 
     @Test
-    public void testGetExchangeRate_MissingFromCurrency() throws Exception {
+    public void should_return_500_when_throws_ExchangeRateServiceException() throws Exception {
+        // given
+        String fromCurrency = "USD";
+        String toCurrency = "EUR";
+        String expectedErrorMsg = "test";
+
+        when(exchangeRateService.getExchangeRate(fromCurrency, toCurrency))
+                .thenThrow(new ExchangeRateServiceException(expectedErrorMsg));
+
+        // when & then
+        mockMvc.perform(get("/exchange-rate")
+                .param("fromCurrency", fromCurrency)
+                .param("toCurrency", toCurrency))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.errorMessage.key").value(EXCHANGE_RATE_SERVICE_ERROR.toString()))
+                .andExpect(jsonPath("$.errorMessage.text").value(expectedErrorMsg));
+    }
+
+    @Test
+    public void should_return_400_when_missing_fromCurrency_param() throws Exception {
         // when & then
         mockMvc.perform(get("/exchange-rate")
                 .param("fromCurrency", "")
@@ -119,7 +141,7 @@ class ExchangeRateControllerTest {
     }
 
     @Test
-    public void testGetExchangeRate_MissingToCurrency() throws Exception {
+    public void should_return_400_when_missing_toCurrency_param() throws Exception {
         // when & then
         mockMvc.perform(get("/exchange-rate")
                 .param("fromCurrency", "EUR")
