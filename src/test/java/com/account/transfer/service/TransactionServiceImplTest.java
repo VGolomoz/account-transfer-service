@@ -278,8 +278,7 @@ class TransactionServiceImplTest {
 
         AccountModel accountOwner = prepareAccountModel(1L, accountOwnerId, BigDecimal.valueOf(200.0), fromCurrency);
         AccountModel targetAccount = prepareAccountModel(2L, targetAccountId, BigDecimal.valueOf(300.0), toCurrency);
-        String expectedMessage = String.format("Fetch latest exchange rate from=test.host for currency=%s " +
-                "failed with status code=%s", fromCurrency, HttpStatus.INTERNAL_SERVER_ERROR);
+        String expectedMessage = "test";
 
         when(accountService.getAccountByOwnerId(accountOwnerId)).thenReturn(accountOwner);
         when(accountService.getAccountByOwnerId(targetAccountId)).thenReturn(targetAccount);

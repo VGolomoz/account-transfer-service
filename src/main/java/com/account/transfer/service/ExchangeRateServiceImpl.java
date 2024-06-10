@@ -8,9 +8,10 @@ import com.account.transfer.mapper.ExchangeRateMapper;
 import com.account.transfer.service.model.ExchangeRateModel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Optional;
@@ -30,22 +31,27 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
                 properties.getHost(), fromCurrency, toCurrency);
         var apiFullPath = properties.getUrl() + fromCurrency;
 
-        ResponseEntity<ExchangeRateSourceResponse> response =
-                restTemplate.getForEntity(apiFullPath, ExchangeRateSourceResponse.class);
+        try {
+            ResponseEntity<ExchangeRateSourceResponse> response =
+                    restTemplate.getForEntity(apiFullPath, ExchangeRateSourceResponse.class);
 
-        if (HttpStatus.OK == response.getStatusCode()) {
             var rate = Optional.ofNullable(response.getBody())
-                    .filter(body -> fromCurrency.equals(body.getBase()))
+                    .filter(it -> fromCurrency.equals(it.getBase()))
                     .map(ExchangeRateSourceResponse::getRates)
                     .map(rates -> rates.get(toCurrency))
                     .orElseThrow(() -> new ExchangeRateNotFoundException(fromCurrency, toCurrency));
 
             log.info("Current exchange rate: {}, for pair: [{}:{}]", rate, fromCurrency, toCurrency);
             return mapper.buildExchangeRateModel(fromCurrency, toCurrency, rate);
-        }
 
-        var exceptionMsg = String.format("Fetch latest exchange rate from=%s for currency=%s " +
-                "failed with status code=%s", properties.getHost(), fromCurrency, response.getStatusCode());
-        throw new ExchangeRateServiceException(exceptionMsg);
+        } catch (RestClientException ex) {
+            if (ex instanceof HttpClientErrorException.NotFound) {
+                throw new ExchangeRateNotFoundException(fromCurrency, toCurrency);
+            }
+
+            var exceptionMsg = String.format("Fetch latest exchange rate from=%s for currency=%s " +
+                    "failed by reason=%s", properties.getHost(), fromCurrency, ex.getMessage());
+            throw new ExchangeRateServiceException(exceptionMsg);
+        }
     }
 }

@@ -14,6 +14,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
@@ -162,19 +164,43 @@ class ExchangeRateServiceImplTest {
     }
 
     @Test
-    public void testGetExchangeRate_FailedToFetchRate() {
+    public void testGetExchangeRate_RateNotFound_when_NotFoundResponse() {
         // given
         String fromCurrency = "USD";
         String toCurrency = "EUR";
+        BigDecimal expectedRate = BigDecimal.valueOf(0.85);
+        String expectedMessage = String.format("Exchange rate for pairs [%s:%s] is not found", fromCurrency, toCurrency);
 
-        ResponseEntity<ExchangeRateSourceResponse> responseEntity = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        String expectedMessage = String.format("Fetch latest exchange rate from=%s for currency=%s " +
-                "failed with status code=%s", TEST_HOST, fromCurrency, responseEntity.getStatusCode());
+        ExchangeRateSourceResponse sourceResponse =
+                prepareExchangeRateSourceResponse(fromCurrency, toCurrency, expectedRate);
 
         when(properties.getUrl()).thenReturn(TEST_API_URI);
         when(properties.getHost()).thenReturn(TEST_HOST);
         when(restTemplate.getForEntity(TEST_API_URI + fromCurrency, ExchangeRateSourceResponse.class))
-                .thenReturn(responseEntity);
+                .thenThrow(HttpClientErrorException.NotFound.class);
+
+        // when
+        Throwable exception = Assertions.assertThrows(ExchangeRateNotFoundException.class,
+                () -> exchangeRateService.getExchangeRate(fromCurrency, toCurrency));
+
+        // then
+        assertEquals(expectedMessage, exception.getMessage());
+
+        verifyNoInteractions(mapper);
+    }
+
+    @Test
+    public void testGetExchangeRate_FailedToFetchRate() {
+        // given
+        String fromCurrency = "USD";
+        String toCurrency = "EUR";
+        String expectedMessage = String.format("Fetch latest exchange rate from=%s for currency=%s " +
+                "failed by reason=INTERNAL SERVER ERROR", TEST_HOST, fromCurrency);
+
+        when(properties.getUrl()).thenReturn(TEST_API_URI);
+        when(properties.getHost()).thenReturn(TEST_HOST);
+        when(restTemplate.getForEntity(TEST_API_URI + fromCurrency, ExchangeRateSourceResponse.class))
+                .thenThrow(new RestClientException("INTERNAL SERVER ERROR"));
 
         // when
         Throwable exception = Assertions.assertThrows(ExchangeRateServiceException.class,
