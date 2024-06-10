@@ -24,6 +24,16 @@ spring:
     change-log: classpath:/db/changelog/changelog.xml
     enabled: true
 
+springdoc:
+  api-docs:
+    path: /docs
+    enabled: true
+  swagger-ui:
+    use-root-path: true
+    enabled: true
+  packages-to-scan: com.account.transfer.api
+  paths-to-match: /**
+
 external:
   service:
     currency-exchange:

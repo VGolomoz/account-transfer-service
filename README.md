@@ -52,6 +52,9 @@ ID      BALANCE     CURRENCY    OWNER_ID
 
 ## Available Endpoints
 
+After the application is successfully launched, full Swagger documentation will be available at:
+http://localhost:8080/account-transfer-service/swagger-ui/index.html
+
 ### 1. Retrieving the current exchange rate between the currencies specified in the parameters: 'fromCurrency' and 'toCurrency'
 
 GET /account-transfer-service/exchange-rate
