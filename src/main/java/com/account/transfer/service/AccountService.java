@@ -1,7 +1,6 @@
 package com.account.transfer.service;
 
 import com.account.transfer.exception.AccountNotFoundException;
-import com.account.transfer.exception.ExchangeRateNotFoundException;
 import com.account.transfer.service.model.AccountModel;
 
 /**

@@ -35,6 +35,7 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
 
         if (HttpStatus.OK == response.getStatusCode()) {
             var rate = Optional.ofNullable(response.getBody())
+                    .filter(body -> fromCurrency.equals(body.getBase()))
                     .map(ExchangeRateSourceResponse::getRates)
                     .map(rates -> rates.get(toCurrency))
                     .orElseThrow(() -> new ExchangeRateNotFoundException(fromCurrency, toCurrency));

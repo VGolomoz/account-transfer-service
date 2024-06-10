@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import static com.account.transfer.entity.TransactionStatus.SUCCESS;
 
@@ -82,7 +83,7 @@ public class TransactionServiceImpl implements TransactionService {
         var toCurrency = targetAccount.getCurrency();
         log.info("Perform the different currencies transfer, from currency: {}, to currency: {}", fromCurrency, toCurrency);
         var actualExchangeRate = exchangeRateService.getExchangeRate(fromCurrency, toCurrency);
-        var exchangeAmount = amount.multiply(actualExchangeRate.getRate());
+        var exchangeAmount = amount.multiply(actualExchangeRate.getRate()).setScale(2, RoundingMode.HALF_UP);
 
         var updatedAccountOwner = accountOwner.toBuilder()
                 .balance(accountOwner.getBalance().subtract(amount))
